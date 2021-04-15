@@ -74,6 +74,14 @@ impl AtomicBitmap {
         self.size
     }
 
+    /// Get the bitmap of pages dirtied, and reset the bitmap inside `AtomicBitmap` (atomically across 64 pages)
+    pub fn get_and_reset(&self) -> Vec<u64> {
+        self.map
+            .iter()
+            .map(|u| u.fetch_and(0, Ordering::SeqCst))
+            .collect()
+    }
+
     /// Reset all bitmap bits to 0.
     pub fn reset(&self) {
         for it in self.map.iter() {
