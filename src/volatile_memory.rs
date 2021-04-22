@@ -297,6 +297,10 @@ impl<'a, B: BitmapSlice> VolatileSlice<'a, B> {
 
     /// Returns a pointer to the beginning of the slice.
     pub fn as_ptr(&self) -> *mut u8 {
+        // We mark whole slice as dirty since we have no way of knowing if a
+        // mutable access will subsequently happen or not.
+        self.bitmap().mark_dirty(0, self.len());
+
         self.addr
     }
 
