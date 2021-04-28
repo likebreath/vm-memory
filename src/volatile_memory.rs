@@ -926,6 +926,10 @@ where
 
     /// Returns a pointer to the underlying memory.
     pub fn as_ptr(self) -> *mut u8 {
+        // We mark whole referred memory as dirty since we have no way of knowing if a
+        // mutable access will subsequently happen or not.
+        self.bitmap().mark_dirty(0, self.len());
+
         self.addr as *mut u8
     }
 
@@ -1063,6 +1067,11 @@ where
 
     /// Returns a pointer to the underlying memory.
     pub fn as_ptr(&self) -> *mut u8 {
+        // We mark whole referred memory array as dirty since we have no way of knowing if a
+        // mutable access will subsequently happen or not.
+        self.bitmap()
+            .mark_dirty(0, self.len() * self.element_size());
+
         self.addr
     }
 
