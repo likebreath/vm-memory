@@ -145,6 +145,7 @@ pub fn check_file_offset(
 pub struct GuestRegionMmap<B = ()> {
     mapping: MmapRegion<B>,
     guest_base: GuestAddress,
+    restricted_file_offset: Option<FileOffset>,
 }
 
 impl<B> Deref for GuestRegionMmap<B> {
@@ -165,6 +166,25 @@ impl<B: Bitmap> GuestRegionMmap<B> {
         Ok(GuestRegionMmap {
             mapping,
             guest_base,
+            restricted_file_offset: None,
+        })
+    }
+
+    /// Create a new memory-mapped private memory region that is backed by 'memfd_restricted'
+    /// for the guest's physical memory.
+    pub fn new_private(
+        mapping: MmapRegion<B>,
+        guest_base: GuestAddress,
+        restricted_file_offset: Option<FileOffset>,
+    ) -> result::Result<Self, Error> {
+        if guest_base.0.checked_add(mapping.size() as u64).is_none() {
+            return Err(Error::InvalidGuestRegion);
+        }
+
+        Ok(GuestRegionMmap {
+            mapping,
+            guest_base,
+            restricted_file_offset,
         })
     }
 }
@@ -464,6 +484,10 @@ impl<B: Bitmap> GuestMemoryRegion for GuestRegionMmap<B> {
 
     fn start_addr(&self) -> GuestAddress {
         self.guest_base
+    }
+
+    fn restricted_file_offset(&self) -> Option<&FileOffset> {
+        self.restricted_file_offset.as_ref()
     }
 
     fn bitmap(&self) -> &Self::B {
