@@ -173,6 +173,9 @@ pub trait GuestMemoryRegion: Bytes<MemoryRegionAddress, E = Error> {
     /// Returns the minimum (inclusive) address managed by the region.
     fn start_addr(&self) -> GuestAddress;
 
+    /// Returns information regarding the 'guest_memfd' file and offset backing this memory region.
+    fn guest_memfd_fo(&self) -> Option<&FileOffset>;
+
     /// Returns the maximum (inclusive) address managed by the region.
     fn last_addr(&self) -> GuestAddress {
         // unchecked_add is safe as the region bounds were checked when it was created.
